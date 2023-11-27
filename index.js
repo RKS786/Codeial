@@ -1,6 +1,8 @@
 // Import the express library
 const express = require('express');
 
+const cookieParser = require('cookie-parser');
+
 // Import the Mongoose connection object from the mongoose.js file in the config directory
 const db = require('./config/mongoose');
 
@@ -9,6 +11,9 @@ const app = express();
 
 // Set the port for the server
 const port = 8000;
+
+app.use(express.urlencoded());
+app.use(cookieParser());
 
 // Import express-ejs-layouts for layout support
 const expressLayouts = require('express-ejs-layouts');
