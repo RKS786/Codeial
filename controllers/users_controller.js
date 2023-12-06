@@ -117,3 +117,18 @@ module.exports.createSession = function(req, res) {
 
     return res.redirect('/');
 };
+
+
+// Destroy session
+module.exports.destroySession = function(req, res){
+    // Using req.logout() with a callback function
+    req.logout(function(err) {
+        if (err) {
+            // Handle the error, e.g., by sending an error response
+            return res.status(500).send("Error during logout");
+        }
+        
+        // Redirecting the user to the root URL after logout
+        return res.redirect('/');
+    })
+}

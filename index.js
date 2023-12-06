@@ -12,13 +12,22 @@ const session = require('express-session');
 //For Authentication
 const passport = require('passport');
 const passportLocal = require('./config/passport-local-strategy');
-const MongoStore = require('connect-mongo');
+const MongoStore = require('connect-mongo');    // to store session information even after server restarts
+const sassMiddleware = require('node-sass-middleware');
 
 // Create an instance of the express application
 const app = express();
 
 // Set the port for the server
 const port = 8000;
+
+app.use(sassMiddleware({
+    src: './assets/scss' ,
+    dest: './assets/css' ,
+    debug: true,
+    outputStyle: 'extended',
+    prefix: '/css'
+}));
 
 app.use(express.urlencoded());
 app.use(cookieParser());
