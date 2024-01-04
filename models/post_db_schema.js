@@ -7,7 +7,7 @@ const postSchema = new mongoose.Schema({
     },
     user:{
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'user_db_schema'
+        ref: 'User'
     }
     },{
         timestamps: true
