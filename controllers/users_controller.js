@@ -32,10 +32,50 @@ module.exports.profile = function(req, res){
     //     // Redirect to sign-in if user_id cookie is not present
     //     return res.redirect('/users/sign-in');
     // }
-    return res.render('user_profile', {
-        title: 'User Profile'
-    })
+
+    User.findById(req.params.id)
+    .then(user => {
+
+        return res.render('user_profile', {
+            title: 'User Profile',
+            profile_user: user
+        });
+    });
+   
 }
+
+
+module.exports.update = async function (req, res) {
+    try {
+        if (req.user.id == req.params.id) {
+            const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
+
+            if (!user) {
+
+                // User not found
+                req.flash("error", "User not found");
+                return res.redirect('back');
+
+            }
+
+            req.flash("success","User name and email updated successfully");
+            return res.redirect('back');
+
+        } else {
+
+            req.flash("error", "Unauthorized");
+            return res.redirect('back');
+
+        }
+    } catch (err) {
+        // Handle the error appropriately
+        req.flash("error", err);
+        return res.redirect('back');
+    }
+};
+
+
+
 
 
 
@@ -55,6 +95,7 @@ module.exports.signUp = function(req, res){
 module.exports.signIn = function(req, res){
     
     if(req.isAuthenticated()){
+        
         return res.redirect('/users/profile');
     }
     
@@ -63,30 +104,40 @@ module.exports.signIn = function(req, res){
     });
 }
 
-// Controller function to get the sign up data
-module.exports.create = function(req, res) {
-    if (req.body.password != req.body.confirm_password) {
-        console.log("password & confirm password does not match");
-        return res.redirect('back');
-    }
+// Controller function to get the sign-up data
+module.exports.create = async function(req, res) {
+    try {
+        if (req.body.password !== req.body.confirm_password) {
 
-    // Using promises
-    User.findOne({ email: req.body.email })
-        .then(user => {
-            if (!user) {
-                return User.create(req.body);
-            } else {
-                return Promise.reject("User already exists");
-            }
-        })
-        .then(user => {
-            return res.redirect('/users/sign-in');
-        })
-        .catch(err => {
-            console.error("Error in user creation:", err);
+            req.flash("error", "Password and confirm password does not match");
             return res.redirect('back');
-        });
-}
+        }
+
+        // Using async/await
+        const existingUser = await User.findOne({ email: req.body.email });
+
+        if (!existingUser) {
+
+            const newUser = await User.create(req.body);
+            console.log("User created successfully:", newUser);
+            req.flash("success","User created successfully");
+            return res.redirect('/users/sign-in');
+
+        } else {
+
+            req.flash("error", "User already exists");
+            return res.redirect('back');
+
+        }
+    } catch (err) {
+
+        console.error("Error in user creation:", err);
+        req.flash("error", "Error in user creation");
+            return res.redirect('back');
+
+    }
+};
+
 
 
 // Controller function to sign in and create a session for user
@@ -114,7 +165,7 @@ module.exports.createSession = function(req, res) {
     //         console.error("Error in createSession:", err);
     //         return res.redirect('back');
     //     });
-
+    req.flash("success","Logged In Successfully");
     return res.redirect('/');
 };
 
@@ -128,6 +179,7 @@ module.exports.destroySession = function(req, res){
             return res.status(500).send("Error during logout");
         }
         
+        req.flash("success","You have Logged out Successfully");
         // Redirecting the user to the root URL after logout
         return res.redirect('/');
     })

@@ -1,25 +1,22 @@
 // Import the express library
 const express = require('express');
-
 const cookieParser = require('cookie-parser');
-
+// Create an instance of the express application
+const app = express();
+// Set the port for the server
+const port = 8000;
 // Import the Mongoose connection object from the mongoose.js file in the config directory
 const db = require('./config/mongoose');
-
 // Used for session cookie
 const session = require('express-session');
-
 //For Authentication
 const passport = require('passport');
 const passportLocal = require('./config/passport-local-strategy');
 const MongoStore = require('connect-mongo');    // to store session information even after server restarts
 const sassMiddleware = require('node-sass-middleware');
+const flash = require('connect-flash');
+const customMware = require('./config/middleware');
 
-// Create an instance of the express application
-const app = express();
-
-// Set the port for the server
-const port = 8000;
 
 app.use(sassMiddleware({
     src: './assets/scss' ,
@@ -72,6 +69,8 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use(passport.setAuthenticatedUser);
+app.use(flash());
+app.use(customMware.setFlash);
 
 // Use express router defined in the 'routes' module
 app.use('/', require('./routes'));
