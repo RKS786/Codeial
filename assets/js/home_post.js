@@ -16,11 +16,22 @@ let createPost = function () {
             url: '/posts/create-post',// Provide the URL endpoint where the form data should be sent
             data: formData, // Include the serialized form data in the request payload
             success: function (response) { // Define a callback function to handle a successful response from the server 
-                console.log('Post created successfully:', response);
+                console.log('Post created successfully through ajax:', response);
                 let newPost = newPostDom(response.data.post);
                 $('#posts-list-container>ul').prepend(newPost);
+                // Attach deletePost function to the new post
                 deletePost($(' .delete-post-button',newPost));
-                
+                // call the create comment class
+                new PostComments(response.data.post._id);
+
+                new Noty({
+                    theme: 'relax',
+                    text: "Post published!",
+                    type: 'success',
+                    layout: 'topRight',
+                    timeout: 1500
+                    
+                }).show();
             },
 
             error: function (error) {// Define a callback function to handle errors from the server  
@@ -48,13 +59,13 @@ let newPostDom = function(post){
 
     <div class="post-comments">
            
-                 <form action="/comments/create" method="post">
+                 <form id="post-<%= post._id %>-comments-form" action="/comments/create" method="post">
                     <input type="text" name="content" placeholder="Type here to add comment.....">
                     <input type="hidden" name="post"  value= ${post._id} >
                     <input type="submit" value="Add Comment">
                   </form>
 
-            <div class="post-comments-list">
+            <div id="post-comments-list">
                     <ul id="post-comments-${post._id}" >
                             
         </ul>
@@ -65,6 +76,7 @@ let newPostDom = function(post){
 
 // method to delete a post from DOM
 let deletePost = function(deleteLink){
+    console.log("in delete post",deleteLink)
     $(deleteLink).click(function(e){
         e.preventDefault();
 
@@ -72,7 +84,17 @@ let deletePost = function(deleteLink){
             type: 'get',
             url: $(deleteLink).prop('href'),
             success: function(data){
+                console.log("post deleted successfully through ajax")
                 $(`#post-${data.data.post_id}`).remove();
+                
+                new Noty({
+                    theme: 'relax',
+                    text: "Post deleted!",
+                    type: 'success',
+                    layout: 'topRight',
+                    timeout: 1500
+                    
+                }).show();
             },error: function(error){
                 console.log(error.responseText);
             }
@@ -80,5 +102,29 @@ let deletePost = function(deleteLink){
     })
 }
 
+
+
+// loop over all the existing posts on the page (when the window loads for the first time) and 
+//call the delete post method on delete link of each, also add AJAX (using the class we've created) to the delete button of each
+let convertPostsToAjax = function(){
+    $('#posts-list-container>ul>li').each(function(){
+        //currentListItem is assigned the jQuery object representing the current list item (<li>).
+        let currentListItem = $(this);
+        //selects the element with the class 'delete-post-button' that is a descendant of the current list item (<li>).
+        let deleteButton = $(' .delete-post-button', self);
+        //This function sets up the click event handler for the delete button, enabling the asynchronous deletion of the post via Ajax
+        deletePost(deleteButton);
+
+        // get the post's id by splitting the id attribute
+        let postId = currentListItem.prop('id').split("-")[1];
+        //create a new instance of the PostComments class , passing the extracted postId as an argument
+        new PostComments(postId);
+    });
+}
+
+
+
 createPost();
+convertPostsToAjax();
+
 }

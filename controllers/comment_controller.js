@@ -20,8 +20,18 @@ module.exports.create = async function (req, res) {
 
         post.comments.push(comment);
         await post.save();
+        
+        if(req.xhr){
+            console.log("yes comment req is xhr")
+            return res.status(200).json({
+            data: {
+                comment: comment
+            },
+            message: "Comment created"
+        });
+    }
 
-        req.flash("success","Comment created Successfully");
+        req.flash("success","Comment created flash");
         res.redirect('/');
 
     } catch (err) {
@@ -48,7 +58,17 @@ module.exports.destroy = async function (req, res) {
 
             await comment.deleteOne();
             await Post.findByIdAndUpdate(postId, { $pull: { comments: req.params.id } });
-            req.flash("success","Comment deleted ");
+
+            if(req.xhr){
+                console.log("yes comment destroy req is xhr")
+            return res.status(200).json({
+                data: {
+                    comment_id: req.params.id
+                },
+                message: "Comment deleted"
+            });
+        }
+            req.flash("success","Comment deleted flash ");
             return res.redirect('back');
 
         } else {
