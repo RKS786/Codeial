@@ -123,6 +123,7 @@ class PostComments {
                 type: 'post',
                 url: '/comments/create',
                 data: $(this).serialize(),
+                dataType: 'json',
                 success: function (data) {
                     console.log('Comment created successfully through Ajax:', data);
                     let newComment = postCommentsInstance.createCommentDom(data.data.comment);
@@ -185,12 +186,14 @@ setupExistingComments() {
         let postCommentsInstance = this;
 
         $(deleteLink).click(function (e) {
+            console.log("delete comment event called")
             e.preventDefault();
 
             // Use Ajax to send a request to delete the comment
             $.ajax({
                 type: 'get',
                 url: $(this).prop('href'),
+                dataType: 'json',
                 success: function (data) {
                     console.log("Comment deleted successfully through Ajax", data);
                     $(`#comment-${data.data.comment_id}`).remove();

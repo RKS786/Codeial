@@ -1,11 +1,12 @@
 const Post = require('../models/post_db_schema');
+const User = require('../models/user_db_schema');
 const Comment = require('../models/comment_db_schema')
 
 console.log('post controller loaded')
 
 module.exports.create = async function(req, res){
     try {
-       
+       console.log("in post create controller action")
         let post = await Post.create({ // Create a new post using async/await
             content: req.body.content,
             user: req.user._id
@@ -13,15 +14,22 @@ module.exports.create = async function(req, res){
 
         if(req.xhr){
 
+            // Populate the 'user' field with only the 'name' attribute
+            //to avoid sending sensitive information (like the user's password) in the API response.
+            post = await post.populate('user', 'name');
+
+            // Set Content-Type header to indicate JSON response
+            res.setHeader('Content-Type', 'application/json');
+
             return res.status(200).json({
                 data: {
-                    post: post
+                    post: post,
                 },
                 message: "Post created"
             });
         }
 
-        req.flash("success", "Post published");// If the post is created successfully, send a success flash message and redirect
+        req.flash("success", "Post published flash");// If the post is created successfully, send a success flash message and redirect
         return res.redirect('back');
 
     } catch (err) {

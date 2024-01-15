@@ -9,13 +9,13 @@ module.exports.home = async function(req, res){
     try{
         // Query posts and populate the 'user' field
         let posts = await Post.find({})
-        .sort('-createdAt')
-    .populate('user')
-    .populate({
-        path: 'comments',
-        populate: {
-            path: 'user'
-        }
+            .sort('-createdAt')// Sort posts in descending order based on the 'createdAt' field
+            .populate('user')// Populate the 'user' field in the 'posts' collection
+            .populate({  // Populate the 'comments' field in the 'posts' collection, 
+                path: 'comments',//and within each comment, populate the 'user' field
+                populate: {
+                    path: 'user'
+                }
     });
  
         let users = await User.find({})

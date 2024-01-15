@@ -12,22 +12,28 @@ module.exports.create = async function (req, res) {
             return res.redirect('back');
         }
 
-        const comment = await Comment.create({
+        let comment = await Comment.create({
             content: req.body.content,
             post: req.body.post,
             user: req.user._id
         });
 
         post.comments.push(comment);
-        await post.save();
-        
+        post.save();
+     
         if(req.xhr){
-            console.log("yes comment req is xhr")
+             
+            // Populating the 'user' field in the 'comment' object with the 'name' property
+            comment = await comment.populate('user', 'name');
+
+            // Set Content-Type header to indicate JSON response
+            res.setHeader('Content-Type', 'application/json');
+
             return res.status(200).json({
-            data: {
-                comment: comment
-            },
-            message: "Comment created"
+                data: {
+                    comment: comment
+                },
+                message: "Comment created"
         });
     }
 
@@ -60,7 +66,7 @@ module.exports.destroy = async function (req, res) {
             await Post.findByIdAndUpdate(postId, { $pull: { comments: req.params.id } });
 
             if(req.xhr){
-                console.log("yes comment destroy req is xhr")
+                
             return res.status(200).json({
                 data: {
                     comment_id: req.params.id

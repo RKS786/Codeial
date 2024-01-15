@@ -34,6 +34,8 @@ const expressLayouts = require('express-ejs-layouts');
 
 // Serve static files from the 'assets' directory
 app.use(express.static('./assets'));
+// make the upload path available to browser
+app.use('/uploads', express.static(__dirname + '/uploads'));
 
 // Use express-ejs-layouts middleware
 app.use(expressLayouts);

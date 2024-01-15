@@ -1,6 +1,8 @@
 console.log('user controller loaded');
 
 const User = require('../models/user_db_schema');
+const fileSystem = require('fs');
+const path = require('path');
 
 // Controller function to render user profile
 module.exports.profile = function(req, res){
@@ -46,33 +48,66 @@ module.exports.profile = function(req, res){
 
 
 module.exports.update = async function (req, res) {
-    try {
-        if (req.user.id == req.params.id) {
-            const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
+//     try {
+//         if (req.user.id == req.params.id) {
+//             const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
 
-            if (!user) {
+//             if (!user) {
 
-                // User not found
-                req.flash("error", "User not found");
-                return res.redirect('back');
+//                 // User not found
+//                 req.flash("error", "User not found");
+//                 return res.redirect('back');
+
+//             }
+
+//             req.flash("success","User name and email updated successfully");
+//             return res.redirect('back');
+
+//         } else {
+
+//             req.flash("error", "Unauthorized");
+//             return res.redirect('back');
+
+//         }
+//     } catch (err) {
+//         // Handle the error appropriately
+//         req.flash("error", err);
+//         return res.redirect('back');
+//     }
+// };
+
+
+if(req.user.id == req.params.id){
+    try{
+        let user = await User.findById(req.params.id);
+        User.uploadedAvatar(req, res, function(err){
+
+            if(err){console.log("*****Multer Errors:", err);}
+
+            user.name = req.body.name;
+            user.email = req.body.email;
+
+            if(req.file){
+                console.log(req.file);
+
+                if(user.avatar){
+                    fileSystem.unlinkSync(path.join(__dirname, '..', user.avatar));
+                }
+                // this is saving the path of the uploaded file into the avatar field of the User model
+                user.avatar = User.avatarPath + '/' + req.file.filename;
 
             }
-
-            req.flash("success","User name and email updated successfully");
+            user.save();
             return res.redirect('back');
+        });
 
-        } else {
-
-            req.flash("error", "Unauthorized");
-            return res.redirect('back');
-
-        }
-    } catch (err) {
-        // Handle the error appropriately
+    }catch (err) {
+        
         req.flash("error", err);
         return res.redirect('back');
-    }
-};
+}
+}
+}
 
 
 
