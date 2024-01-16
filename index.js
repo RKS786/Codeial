@@ -12,6 +12,7 @@ const session = require('express-session');
 //For Authentication
 const passport = require('passport');
 const passportLocal = require('./config/passport-local-strategy');
+const passportJwt = require('./config/passport-jwt-strategy');
 const MongoStore = require('connect-mongo');    // to store session information even after server restarts
 const sassMiddleware = require('node-sass-middleware');
 const flash = require('connect-flash');
